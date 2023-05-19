@@ -91,19 +91,20 @@ public class PublishingStatusDao {
             for(PublishingStatusItem items: results){
                 //items.setStatus(PublishingRecordStatus.QUEUED);
                 boolean validEnum = false;
+                //value to test
                 PublishingRecordStatus enumValue = items.getStatus();
+                //enumStuff = one value within PublishingRecordStatus.values()
                 for (PublishingRecordStatus enumStuff: PublishingRecordStatus.values()){
                     if(enumStuff.equals(enumValue)) {
                         validEnum = true;
                         break;
                     }
                 }
-                if(validEnum == false){
+                if(!validEnum){
                     items.setStatus(PublishingRecordStatus.QUEUED);
                     dynamoDbMapper.save(items);
                 }
             }
-            dynamoDbMapper.save(results.get(0));
             return results;
         }
         else

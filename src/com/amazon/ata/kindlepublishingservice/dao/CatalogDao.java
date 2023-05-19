@@ -2,6 +2,7 @@ package com.amazon.ata.kindlepublishingservice.dao;
 
 import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
+import com.amazon.ata.kindlepublishingservice.publishing.BookPublishRequest;
 import com.amazon.ata.kindlepublishingservice.publishing.KindleFormattedBook;
 import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
@@ -63,5 +64,32 @@ public class CatalogDao {
         CatalogItemVersion book = getLatestVersionOfBook(bookId);
         if(book == null)
             throw new BookNotFoundException("The book does not exist");
+    }
+
+    public boolean validateBookExists1(String bookId){
+        CatalogItemVersion book = getBookFromCatalog(bookId);
+        if(book == null)
+            return false;
+        return true;
+    }
+
+    public CatalogItemVersion createOrUpdateBook(BookPublishRequest bookPublishRequest){
+
+        CatalogItemVersion newBook = new CatalogItemVersion();
+        if(!validateBookExists1(bookPublishRequest.getBookId())){
+            //book does not exists
+            newBook.setBookId(KindlePublishingUtils.generateBookId());
+            newBook.setVersion(1);
+        }else {
+            //book exists so we increment the version
+            newBook.setVersion(newBook.getVersion()+1);
+        }
+        newBook.setBookId(bookPublishRequest.getBookId());
+        newBook.setAuthor(bookPublishRequest.getAuthor());
+        newBook.setText(bookPublishRequest.getText());
+        newBook.setGenre(bookPublishRequest.getGenre());
+        newBook.setTitle(bookPublishRequest.getTitle());
+        dynamoDbMapper.save(newBook);
+        return newBook;
     }
 }
