@@ -19,9 +19,9 @@ public class PublishingModule {
 
     @Provides
     @Singleton
-    public BookPublisher provideBookPublisher(ScheduledExecutorService scheduledExecutorService) {
+    public BookPublisher provideBookPublisher(ScheduledExecutorService scheduledExecutorService, CatalogDao catalogDao, PublishingStatusDao publishingStatusDao) {
         DataAccessModule data = new DataAccessModule();
-        return new BookPublisher(scheduledExecutorService, new BookPublishTask(new BookPublishRequestManager(), new CatalogDao(data.provideDynamoDBMapper()), new PublishingStatusDao(data.provideDynamoDBMapper())));
+        return new BookPublisher(scheduledExecutorService, new BookPublishTask(new BookPublishRequestManager(catalogDao, publishingStatusDao), new CatalogDao(data.provideDynamoDBMapper()), new PublishingStatusDao(data.provideDynamoDBMapper())));
     }
 
     @Provides

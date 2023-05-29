@@ -25,7 +25,9 @@ public class GetPublishingStatusActivity {
             return null;
         List<PublishingStatusRecord> returnList = new ArrayList<>();
         for (PublishingStatusItem item: itemList){
-            PublishingStatusRecord record =  PublishingStatusRecord.builder().withStatus(item.getStatus().toString()).withBookId(item.getBookId().toString()).withStatusMessage(item.getStatusMessage().toString()).build();
+            PublishingStatusRecord record =  PublishingStatusRecord.builder().withStatus(item.getStatus().toString()).withStatusMessage(item.getStatusMessage().toString()).build();
+            if(item.getBookId() != null && !item.getBookId().isEmpty())
+                record.setBookId(item.getBookId());
             returnList.add(record);
         }
         return GetPublishingStatusResponse.builder().withPublishingStatusHistory(returnList).build();

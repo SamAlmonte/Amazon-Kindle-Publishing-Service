@@ -60,6 +60,18 @@ public class CatalogDao {
         return results.get(0);
     }
 
+    public CatalogItemVersion removeBookFromCatalog(String bookId) {
+        CatalogItemVersion book = getLatestVersionOfBook(bookId);
+        if (book == null || book.isInactive()) {
+            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+        } else {
+            book.setInactive(true);
+        }
+        dynamoDbMapper.save(book);
+
+        return book;
+    }
+
     public void validateBookExists(String bookId){
         CatalogItemVersion book = getLatestVersionOfBook(bookId);
         if(book == null)
@@ -76,20 +88,26 @@ public class CatalogDao {
     public CatalogItemVersion createOrUpdateBook(BookPublishRequest bookPublishRequest){
 
         CatalogItemVersion newBook = new CatalogItemVersion();
-        if(!validateBookExists1(bookPublishRequest.getBookId())){
+        if(bookPublishRequest.getBookId() == null){
             //book does not exists
             newBook.setBookId(KindlePublishingUtils.generateBookId());
             newBook.setVersion(1);
         }else {
             //book exists so we increment the version
-            newBook.setVersion(newBook.getVersion()+1);
+            CatalogItemVersion oldBook = getLatestVersionOfBook(bookPublishRequest.getBookId());
+            oldBook.setInactive(true);
+            dynamoDbMapper.save(oldBook);
+            newBook.setBookId(bookPublishRequest.getBookId());
+            newBook.setVersion(oldBook.getVersion()+1);
         }
-        newBook.setBookId(bookPublishRequest.getBookId());
         newBook.setAuthor(bookPublishRequest.getAuthor());
         newBook.setText(bookPublishRequest.getText());
         newBook.setGenre(bookPublishRequest.getGenre());
         newBook.setTitle(bookPublishRequest.getTitle());
+        newBook.setInactive(false);
         dynamoDbMapper.save(newBook);
         return newBook;
     }
+
+
 }

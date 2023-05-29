@@ -37,8 +37,7 @@ public class SubmitBookForPublishingActivity {
     public SubmitBookForPublishingActivity(PublishingStatusDao publishingStatusDao, CatalogDao catalogDao) {
         this.publishingStatusDao = publishingStatusDao;
         this.catalogDao = catalogDao;
-        bookPublishRequestManager = new BookPublishRequestManager();
-
+        bookPublishRequestManager = new BookPublishRequestManager(catalogDao, publishingStatusDao);
     }
 
     /**
@@ -56,11 +55,12 @@ public class SubmitBookForPublishingActivity {
         // TODO: If there is a book ID in the request, validate it exists in our catalog
         // TODO: Submit the BookPublishRequest for processing
         bookPublishRequestManager.addBookPublishRequest(bookPublishRequest);
+        if(request.getBookId() != null)
+            catalogDao.validateBookExists(request.getBookId());
         PublishingStatusItem item =  publishingStatusDao.setPublishingStatus(bookPublishRequest.getPublishingRecordId(),
                 PublishingRecordStatus.QUEUED,
                 bookPublishRequest.getBookId());
-        if(request.getBookId() != null)
-            catalogDao.validateBookExists(request.getBookId());
+        bookPublishRequestManager.startRequest();
         return SubmitBookForPublishingResponse.builder()
                 .withPublishingRecordId(item.getPublishingRecordId())
                 .build();

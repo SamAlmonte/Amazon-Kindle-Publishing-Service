@@ -84,7 +84,7 @@ public class PublishingStatusDao {
         //DynamoDBQueryExpression
         PublishingStatusItem item = new PublishingStatusItem();
         item.setPublishingRecordId(publishingRecordId);
-        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression().withHashKeyValues(item);
+        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression<PublishingStatusItem>().withHashKeyValues(item).withScanIndexForward(false);
         List<PublishingStatusItem> results = dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
         if(!results.isEmpty()) {
             //iterate through results make sure all the statuses are valid
